@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: demo buenas practicas
+Resources:
+# recurso 1
+  BuenasPracticasFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !GetAtt "LambdaIAMRole.Arn"
+      Runtime: java11
+      Handler: com.sebastian.buenaspracticas.LambdaHandler::handleRequest
+      CodeUri: ../../../target/buenas-practicas.jar
+      Timeout: 30
+      MemorySize: 256
+# Log 1
+  BuenasPracticasFunctionLog:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/buenaspracticas-${BuenasPracticasFunction}"
+      RetentionInDays: 5
+  LambdaIAMRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - "sts:AssumeRole"
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+      Policies:
+        - PolicyDocument:
+            Version: "2012-10-17"
+            Statement:           
+              - Effect: Allow
+                Action:
+                - dynamodb:GetItem
+                - dynamodb:Query
+                Resource: "*"
+          PolicyName: "BPIAMRole"
